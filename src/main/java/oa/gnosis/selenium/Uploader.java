@@ -12,6 +12,9 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import oa.variabilis.web.utils.poi.RowStream;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Row;
@@ -35,7 +38,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 public class Uploader {
 
-    private static WebDriver driver = new ChromeDriver();
+    private static WebDriver driver;
     private static Logger log;
 
     private static Consumer<Row> CURLProcessor = (row) -> {
@@ -49,7 +52,7 @@ public class Uploader {
     };
     private static Consumer<Row> SeleniumProcessor = (row) -> {
         RowConsumer consumer = new RowConsumer(row, log);
-        if(consumer.getFirstName().trim().isBlank()){
+        if (consumer.getFirstName().trim().isBlank()) {
             log.log(Level.INFO, "{0} WARN: sin nombre, asignando ''SIN NOMBRE''", consumer.getUserLogName());
             consumer.setFirstName("SIN");
             consumer.setLastName("NOMBRE");
@@ -98,11 +101,20 @@ public class Uploader {
         }
         fh.setFormatter(new SimpleFormatter());
         log.addHandler(fh);
-        assert (args.length > 1);
-        String filePath = args[0];
         Workbook wb = null;
         try {
-            wb = WorkbookFactory.create(new File(filePath));
+//            log.info("args.length:"+args.length+args[0]);
+            File file = (args.length > 0) ? new File(args[0]) : null;
+            if (file == null) {
+                JFileChooser chooser = new JFileChooser();
+                chooser.addChoosableFileFilter(new FileNameExtensionFilter("Libros de Excel", "xlsx","xls"));
+                chooser.setDialogTitle("Seleccione el archivo excel a cargar");
+                if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+                    return;
+                }
+                file = chooser.getSelectedFile();
+            }
+            wb = WorkbookFactory.create(file);
         } catch (IOException ex) {
             Logger.getLogger(Uploader.class.getName()).log(Level.SEVERE, null, ex);
         } catch (EncryptedDocumentException ex) {
@@ -110,6 +122,7 @@ public class Uploader {
         }
         final Sheet sheet = wb.getSheetAt(0);
         RowStream rowst = new RowStream(sheet);
+        driver = new ChromeDriver();
 //        rowst.parallel().forEach(CURLProcessor);
         rowst.forEach(SeleniumProcessor);
         driver.quit();
