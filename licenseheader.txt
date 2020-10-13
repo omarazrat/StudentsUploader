@@ -1,0 +1,9 @@
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
+${licensePrefix} StudentsUploader
+${licensePrefix} Cargador de datos de estudiantes a formularios
+${licensePrefix} Este programa fue diseñado para la Santa Iglesia Gnostica Universal, por Nestor Arias -nestor_arias@hotmail.com
+<#if licenseLast??>
+${licenseLast}
+</#if>

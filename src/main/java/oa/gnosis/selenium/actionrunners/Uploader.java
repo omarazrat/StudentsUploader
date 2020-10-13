@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package oa.gnosis.selenium;
+package oa.gnosis.selenium.actionrunners;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,16 +13,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import oa.gnosis.selenium.RowConsumer;
+import oa.gnosis.selenium.interfaces.Action;
 import oa.variabilis.web.utils.poi.RowStream;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.codelibs.curl.Curl;
-import org.codelibs.curl.CurlRequest;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
@@ -36,21 +35,16 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  *
  * @author nesto
  */
-public class Uploader {
+public class Uploader implements Action {
 
-    private static WebDriver driver;
     private static Logger log;
+    private static WebDriver driver;
 
-    private static Consumer<Row> CURLProcessor = (row) -> {
-        RowConsumer consumer = new RowConsumer(row, log);
-        final CurlRequest request = Curl.post(consumer.getUrl());
-        request.param("nombre", consumer.getFirstName());
-        request.param("apellido", consumer.getLastName());
-        request.param("ciudad", consumer.getCity());
-        request.param("celular", consumer.getMobile());
-        request.execute();
-    };
-    private static Consumer<Row> SeleniumProcessor = (row) -> {
+    /**
+     * Procesador de filas de hoja de cálculo Por cada fila toma los datos de
+     * una persona y los registra en la página del curso.
+     */
+    private static final Consumer<Row> SeleniumProcessor = (row) -> {
         RowConsumer consumer = new RowConsumer(row, log);
         if (consumer.getFirstName().trim().isBlank()) {
             log.log(Level.INFO, "{0} WARN: sin nombre, asignando ''SIN NOMBRE''", consumer.getUserLogName());
@@ -89,7 +83,9 @@ public class Uploader {
         }
     };
 
-    public static void main(String args[]) {
+    @Override
+    public void run(WebDriver driver) {
+        Uploader.driver = driver;
         log = Logger.getLogger(Uploader.class.getName());
         FileHandler fh = null;
         try {
@@ -104,16 +100,14 @@ public class Uploader {
         Workbook wb = null;
         try {
 //            log.info("args.length:"+args.length+args[0]);
-            File file = (args.length > 0) ? new File(args[0]) : null;
-            if (file == null) {
-                JFileChooser chooser = new JFileChooser();
-                chooser.addChoosableFileFilter(new FileNameExtensionFilter("Libros de Excel", "xlsx","xls"));
-                chooser.setDialogTitle("Seleccione el archivo excel a cargar");
-                if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
-                    return;
-                }
-                file = chooser.getSelectedFile();
+            File file = null;
+            JFileChooser chooser = new JFileChooser();
+            chooser.addChoosableFileFilter(new FileNameExtensionFilter("Libros de Excel", "xlsx", "xls"));
+            chooser.setDialogTitle("Seleccione el archivo excel a cargar");
+            if (chooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) {
+                return;
             }
+            file = chooser.getSelectedFile();
             wb = WorkbookFactory.create(file);
         } catch (IOException ex) {
             Logger.getLogger(Uploader.class.getName()).log(Level.SEVERE, null, ex);
@@ -122,10 +116,8 @@ public class Uploader {
         }
         final Sheet sheet = wb.getSheetAt(0);
         RowStream rowst = new RowStream(sheet);
-        driver = new ChromeDriver();
 //        rowst.parallel().forEach(CURLProcessor);
         rowst.forEach(SeleniumProcessor);
-        driver.quit();
     }
 
 }

@@ -81,7 +81,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>oa.gnosis.selenium.Uploader</mainClass>
+                            <mainClass>oa.gnosis.selenium.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
