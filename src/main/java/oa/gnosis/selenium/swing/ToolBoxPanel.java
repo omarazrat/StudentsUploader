@@ -9,7 +9,6 @@ import java.awt.event.ItemEvent;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.prefs.Preferences;
 import static java.util.stream.Collectors.toList;
@@ -18,6 +17,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import oa.gnosis.selenium.actionrunners.Uploader;
 import oa.gnosis.selenium.interfaces.Action;
+import oa.variabilis.web.utils.RBHelper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -40,7 +40,6 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         OPERA,
         SAFARI
     }
-    private ResourceBundle props = ResourceBundle.getBundle("global");
     private ComboBoxModel<String> browserModel;
     private final String PREF_SEL_BROWSER = "browser.selected";
     private WebDriver driver = null;
@@ -52,7 +51,7 @@ public class ToolBoxPanel extends javax.swing.JPanel {
     public ToolBoxPanel() {
         final List<String> browserOpts = Arrays.asList(BROWSERTYPE.values())
                 .stream()
-                .map(type -> props.getString("browser.opt." + type.name()))
+                .map(type -> RBHelper.sgetString("browser.opt." + type.name()))
                 .collect(toList());
         this.browserModel = new DefaultComboBoxModel<>(new Vector<String>(browserOpts));
         actions = new LinkedList<Action>();
@@ -151,7 +150,7 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         }
         try {
             for (BROWSERTYPE type : BROWSERTYPE.values()) {
-                if (props.getString("browser.opt." + type.name()).equals(selectedBrowser)) {
+                if (RBHelper.sgetString("browser.opt." + type.name()).equals(selectedBrowser)) {
                     switch (type) {
                         case CHROME:
                             driver = new ChromeDriver();

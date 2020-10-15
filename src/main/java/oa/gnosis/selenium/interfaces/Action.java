@@ -5,7 +5,7 @@
  */
 package oa.gnosis.selenium.interfaces;
 
-import java.util.ResourceBundle;
+import oa.variabilis.web.utils.RBHelper;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -14,13 +14,12 @@ import org.openqa.selenium.WebDriver;
  */
 @FunctionalInterface
 public interface Action {
-    ResourceBundle props = ResourceBundle.getBundle("global");
     /**
      * El nombre de esta acciòn.
      * @return 
      */
     public default  String getName(){
-        return props.getString("plugin."+getClass().getSimpleName());
+        return RBHelper.sgetString("plugin."+getClass().getSimpleName());
     }
     /**
      * Ejecuta una acción con el driver proporcionado.
