@@ -5,6 +5,7 @@
  */
 package oa.gnosis.selenium.actionrunners;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -13,6 +14,7 @@ import static java.util.stream.Collectors.toList;
 import javax.swing.JOptionPane;
 import oa.gnosis.selenium.interfaces.Action;
 import oa.variabilis.web.utils.RBHelper;
+import oa.variabilis.web.utils.SysPropertiesHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -37,7 +39,8 @@ public class GroupInviteSender implements Action{
         String url ="";
         //Pide dirección origen
         do{
-            url = JOptionPane.showInputDialog(props.getString("enterUrl"));
+            url = JOptionPane.showInputDialog(props.getString("enterUrl"))
+                    .replace("/f/i", "/f");
         }while(!valid(url));
         //Transforma la dir. para bajar todos los telefonos
         String parsedUrl = changeToAllUrl(url);
@@ -48,11 +51,16 @@ public class GroupInviteSender implements Action{
         //#table > tbody > tr:nth-child(1) > td:nth-child(6) > input[type=text]
         final List<WebElement> textFields = driver.findElements(By.cssSelector(
                 "#table > tbody > tr:nth-child(1) > td:nth-child(6) > input[type=text]"));
-        List<String> numbers = textFields.stream().map(WebElement::getText).collect(toList());
+        List<String> numbers = textFields.stream().
+                map(WebElement::getText).
+                filter(number->Arrays.binarySearch(
+                        new String[]{"+55 6684343770","+57 3132402756"}, number)>=0).
+                collect(toList());
         driver.switchTo().window(WAtab);
+        String message=SysPropertiesHelper.getProp("plugin.GroupInviteSender.message");
         for (String number :numbers){
             waitNWrite("#side > div:nth-child(1) > div > label > div > div:nth-child(1)",
-                    number,driver);
+                    message,driver);
             
         }
         /**

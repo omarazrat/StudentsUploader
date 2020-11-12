@@ -10,14 +10,15 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
-import java.util.prefs.Preferences;
 import static java.util.stream.Collectors.toList;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import oa.gnosis.selenium.actionrunners.GroupInviteSender;
 import oa.gnosis.selenium.actionrunners.Uploader;
 import oa.gnosis.selenium.interfaces.Action;
 import oa.variabilis.web.utils.RBHelper;
+import oa.variabilis.web.utils.SysPropertiesHelper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -56,6 +57,7 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         this.browserModel = new DefaultComboBoxModel<>(new Vector<String>(browserOpts));
         actions = new LinkedList<Action>();
         actions.add(new Uploader());
+        actions.add(new GroupInviteSender());
         initComponents();
     }
 
@@ -74,6 +76,9 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         options = new javax.swing.JPanel();
         browserL = new javax.swing.JLabel();
         browser = new javax.swing.JComboBox<>();
+        inviteLbl = new javax.swing.JLabel();
+        inviteSP = new javax.swing.JScrollPane();
+        invite = new javax.swing.JTextArea();
 
         jTabbedPane1.setMinimumSize(new java.awt.Dimension(400, 300));
         jTabbedPane1.setPreferredSize(new java.awt.Dimension(400, 300));
@@ -82,6 +87,7 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         for(Action action:actions){
             javax.swing.JButton btn = new JButton(action.getName());
             btn.addActionListener((evt)->action.run(driver));
+            System.out.println(btn.getActionCommand());
             toolsPane.add(btn);
         }
         toolsPane.setLayout(new java.awt.GridLayout(2, 1));
@@ -98,11 +104,7 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         options.add(browserL, gridBagConstraints);
 
         browser.setModel(getBrowserModel());
-        String selBrowser =Preferences.userRoot().get(PREF_SEL_BROWSER, null);
-        if(selBrowser!=null){
-            browser.setSelectedItem(selBrowser);
-            setDriver(selBrowser);
-        }
+        updateBrowserState();
         browser.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 browserItemStateChanged(evt);
@@ -111,6 +113,28 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         options.add(browser, gridBagConstraints);
+
+        inviteLbl.setText(bundle.getString("plugin.GroupInviteSender.message.label")); // NOI18N
+        inviteLbl.setToolTipText(bundle.getString("plugin.GroupInviteSender.message.tooltip")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        options.add(inviteLbl, gridBagConstraints);
+
+        invite.setColumns(20);
+        invite.setRows(5);
+        invite.setText(bundle.getString("plugin.GroupInviteSender.message")); // NOI18N
+        invite.setText(SysPropertiesHelper.getProp("plugin.GroupInviteSender.message",invite.getText()));
+        invite.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                inviteCaretUpdate(evt);
+            }
+        });
+        inviteSP.setViewportView(invite);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        options.add(inviteSP, gridBagConstraints);
 
         jTabbedPane1.addTab(bundle.getString("optons.label"), options); // NOI18N
 
@@ -130,10 +154,18 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         if (evt.getStateChange() != ItemEvent.SELECTED) {
             return;
         }
-        final String selectedBrowser = browser.getSelectedItem().toString();
-        Preferences.userRoot().put(PREF_SEL_BROWSER, selectedBrowser);
-        setDriver(selectedBrowser);
+        updateBrowserState();
     }//GEN-LAST:event_browserItemStateChanged
+
+    private void inviteCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_inviteCaretUpdate
+        SysPropertiesHelper.setProp("plugin.GroupInviteSender.message", invite.getText());
+    }//GEN-LAST:event_inviteCaretUpdate
+
+    private void updateBrowserState() {
+        final String selectedBrowser = browser.getSelectedItem().toString();
+        SysPropertiesHelper.setProp(PREF_SEL_BROWSER, selectedBrowser);
+        setDriver(selectedBrowser);
+    }
 
     public ComboBoxModel<String> getBrowserModel() {
         return browserModel;
@@ -187,6 +219,9 @@ public class ToolBoxPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> browser;
     private javax.swing.JLabel browserL;
+    private javax.swing.JTextArea invite;
+    private javax.swing.JLabel inviteLbl;
+    private javax.swing.JScrollPane inviteSP;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JPanel options;
     private javax.swing.JPanel toolsPane;

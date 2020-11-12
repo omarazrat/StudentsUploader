@@ -35,7 +35,7 @@ public class Main {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                panel.dispose();
+                //panel.dispose();
                 System.exit(0);
             }
 
