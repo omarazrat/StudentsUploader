@@ -24,7 +24,7 @@ public abstract class SysPropertiesHelper {
     }
 
     public static String getProp(String key) {
-        return getProp(key);
+        return getProp(key,"");
     }
 
     public static String getProp(String key, String defValue) {

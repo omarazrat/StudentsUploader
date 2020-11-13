@@ -87,15 +87,15 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         for(Action action:actions){
             javax.swing.JButton btn = new JButton(action.getName());
             btn.addActionListener((evt)->action.run(driver));
-            System.out.println(btn.getActionCommand());
+            //        System.out.println(btn.getActionCommand());
             toolsPane.add(btn);
         }
         toolsPane.setLayout(new java.awt.GridLayout(2, 1));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("global"); // NOI18N
         jTabbedPane1.addTab(bundle.getString("actions.label"), toolsPane); // NOI18N
 
-        options.setMinimumSize(new java.awt.Dimension(400, 145));
-        options.setPreferredSize(new java.awt.Dimension(400, 145));
+        options.setMinimumSize(new java.awt.Dimension(400, 200));
+        options.setPreferredSize(new java.awt.Dimension(400, 200));
         options.setLayout(new java.awt.GridBagLayout());
 
         browserL.setText(bundle.getString("browser.label")); // NOI18N
@@ -104,6 +104,7 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         options.add(browserL, gridBagConstraints);
 
         browser.setModel(getBrowserModel());
+        browser.setSelectedItem(SysPropertiesHelper.getProp(PREF_SEL_BROWSER, browser.getSelectedItem().toString()));
         updateBrowserState();
         browser.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -134,6 +135,9 @@ public class ToolBoxPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 200;
+        gridBagConstraints.ipady = 100;
         options.add(inviteSP, gridBagConstraints);
 
         jTabbedPane1.addTab(bundle.getString("optons.label"), options); // NOI18N
@@ -142,7 +146,9 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
