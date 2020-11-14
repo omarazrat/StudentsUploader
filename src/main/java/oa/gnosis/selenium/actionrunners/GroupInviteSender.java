@@ -76,7 +76,7 @@ public class GroupInviteSender implements Action {
                        System.err.println("Conflicto entre \"" + num1 + "\" y \"" + num2 + "\"");
                        return num1;
                 }));
-        String WAtab = openWhatsAppTab();
+        openWhatsAppTab();
 //        driver.switchTo().window(WAtab);
         String message = SysPropertiesHelper.getProp("plugin.GroupInviteSender.message");
         for (String number : contacts.keySet()) {
@@ -153,8 +153,9 @@ public class GroupInviteSender implements Action {
 
     private String openWhatsAppTab() {
         String link = RBHelper.sgetString("whatsapp.url");
-        String js = "window.open('" + link + "','_wa');";  // replace link with your desired link
-        ((JavascriptExecutor) driver).executeScript(js);
+//        String js = "window.open('" + link + "','_wa');";  // replace link with your desired link
+//        ((JavascriptExecutor) driver).executeScript(js);
+        driver.get(link);
         wait(By.tagName("body"), driver);
         final String title = RBHelper.sgetString("whatsapp");
         JOptionPane.showMessageDialog(null, props.getString("enterWA"), title, JOptionPane.INFORMATION_MESSAGE);
