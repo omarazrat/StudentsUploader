@@ -73,15 +73,26 @@ public class ToolBoxPanel extends javax.swing.JPanel {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
         toolsPane = new javax.swing.JPanel();
+        optionsSP = new javax.swing.JScrollPane();
         options = new javax.swing.JPanel();
         browserL = new javax.swing.JLabel();
         browser = new javax.swing.JComboBox<>();
         inviteLbl = new javax.swing.JLabel();
         inviteSP = new javax.swing.JScrollPane();
         invite = new javax.swing.JTextArea();
+        selOpenChatL = new javax.swing.JLabel();
+        selOpenChat = new javax.swing.JTextField();
+        selOpenWaWebL = new javax.swing.JLabel();
+        selOpenWaWeb = new javax.swing.JTextField();
+        selSndBtnL = new javax.swing.JLabel();
+        selSndBtn = new javax.swing.JTextField();
+        testMode = new javax.swing.JCheckBox();
 
-        jTabbedPane1.setMinimumSize(new java.awt.Dimension(400, 300));
-        jTabbedPane1.setPreferredSize(new java.awt.Dimension(400, 300));
+        setMinimumSize(new java.awt.Dimension(710, 450));
+        setPreferredSize(new java.awt.Dimension(710, 450));
+
+        jTabbedPane1.setMinimumSize(new java.awt.Dimension(700, 440));
+        jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 400));
 
         toolsPane.setPreferredSize(new java.awt.Dimension(400, 300));
         for(Action action:actions){
@@ -94,8 +105,12 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("global"); // NOI18N
         jTabbedPane1.addTab(bundle.getString("actions.label"), toolsPane); // NOI18N
 
-        options.setMinimumSize(new java.awt.Dimension(400, 200));
-        options.setPreferredSize(new java.awt.Dimension(400, 200));
+        optionsSP.setMinimumSize(new java.awt.Dimension(700, 440));
+        optionsSP.setPreferredSize(new java.awt.Dimension(700, 440));
+
+        options.setMinimumSize(new java.awt.Dimension(700, 440));
+        options.setPreferredSize(new java.awt.Dimension(700, 440));
+        options.setRequestFocusEnabled(false);
         options.setLayout(new java.awt.GridBagLayout());
 
         browserL.setText(bundle.getString("browser.label")); // NOI18N
@@ -122,8 +137,12 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         options.add(inviteLbl, gridBagConstraints);
 
+        inviteSP.setMinimumSize(new java.awt.Dimension(166, 200));
+        inviteSP.setName(""); // NOI18N
+        inviteSP.setPreferredSize(new java.awt.Dimension(166, 200));
+
         invite.setColumns(20);
-        invite.setRows(5);
+        invite.setRows(20);
         invite.setText(bundle.getString("plugin.GroupInviteSender.message")); // NOI18N
         invite.setText(SysPropertiesHelper.getProp("plugin.GroupInviteSender.message",invite.getText()));
         invite.addCaretListener(new javax.swing.event.CaretListener() {
@@ -140,15 +159,86 @@ public class ToolBoxPanel extends javax.swing.JPanel {
         gridBagConstraints.ipady = 100;
         options.add(inviteSP, gridBagConstraints);
 
-        jTabbedPane1.addTab(bundle.getString("optons.label"), options); // NOI18N
+        selOpenChatL.setText(bundle.getString("plugin.GroupInviteSender.selOpenChat.label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        options.add(selOpenChatL, gridBagConstraints);
+
+        selOpenChat.setText(bundle.getString("plugin.GroupInviteSender.selOpenChat")); // NOI18N
+        selOpenChat.setText(SysPropertiesHelper.getProp("plugin.GroupInviteSender.selOpenChat",selOpenChat.getText()));
+        SysPropertiesHelper.setProp("plugin.GroupInviteSender.selOpenChat",selOpenChat.getText());
+        selOpenChat.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                selOpenChatCaretUpdate(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        options.add(selOpenChat, gridBagConstraints);
+
+        selOpenWaWebL.setText(bundle.getString("plugin.GroupInviteSender.selOpenWaWeb.label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        options.add(selOpenWaWebL, gridBagConstraints);
+
+        selOpenWaWeb.setText(bundle.getString("plugin.GroupInviteSender.selOpenWaWeb")); // NOI18N
+        selOpenWaWeb.setText(SysPropertiesHelper.getProp("plugin.GroupInviteSender.selOpenWaWeb",selOpenWaWeb.getText()));
+        SysPropertiesHelper.setProp("plugin.GroupInviteSender.selOpenWaWeb",selOpenWaWeb.getText());
+        selOpenWaWeb.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                selOpenWaWebCaretUpdate(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        options.add(selOpenWaWeb, gridBagConstraints);
+
+        selSndBtnL.setText(bundle.getString("plugin.GroupInviteSender.selBtnSend.label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        options.add(selSndBtnL, gridBagConstraints);
+
+        selSndBtn.setText(bundle.getString("plugin.GroupInviteSender.selBtnSend")); // NOI18N
+        selSndBtn.setText(SysPropertiesHelper.getProp("plugin.GroupInviteSender.selBtnSend",selSndBtn.getText()));
+        SysPropertiesHelper.setProp("plugin.GroupInviteSender.selBtnSend",selSndBtn.getText());
+        selSndBtn.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                selSndBtnCaretUpdate(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        options.add(selSndBtn, gridBagConstraints);
+
+        testMode.setText(bundle.getString("plugin.testMode")); // NOI18N
+        testMode.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        SysPropertiesHelper.setProp("plugin.testMode", ""+false);
+        testMode.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                testModeStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        options.add(testMode, gridBagConstraints);
+
+        optionsSP.setViewportView(options);
+
+        jTabbedPane1.addTab(bundle.getString("options.label"), optionsSP); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -166,6 +256,22 @@ public class ToolBoxPanel extends javax.swing.JPanel {
     private void inviteCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_inviteCaretUpdate
         SysPropertiesHelper.setProp("plugin.GroupInviteSender.message", invite.getText());
     }//GEN-LAST:event_inviteCaretUpdate
+
+    private void selOpenChatCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_selOpenChatCaretUpdate
+        SysPropertiesHelper.setProp("plugin.GroupInviteSender.selOpenChat", selOpenChat.getText());
+    }//GEN-LAST:event_selOpenChatCaretUpdate
+
+    private void selOpenWaWebCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_selOpenWaWebCaretUpdate
+        SysPropertiesHelper.setProp("plugin.GroupInviteSender.selOpenWaWeb", selOpenWaWeb.getText());
+    }//GEN-LAST:event_selOpenWaWebCaretUpdate
+
+    private void selSndBtnCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_selSndBtnCaretUpdate
+        SysPropertiesHelper.setProp("plugin.GroupInviteSender.selSndBtn", selSndBtn.getText());
+    }//GEN-LAST:event_selSndBtnCaretUpdate
+
+    private void testModeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_testModeStateChanged
+        SysPropertiesHelper.setProp("plugin.testMode", ""+testMode.isSelected());
+    }//GEN-LAST:event_testModeStateChanged
 
     private void updateBrowserState() {
         final String selectedBrowser = browser.getSelectedItem().toString();
@@ -230,6 +336,14 @@ public class ToolBoxPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane inviteSP;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JPanel options;
+    private javax.swing.JScrollPane optionsSP;
+    private javax.swing.JTextField selOpenChat;
+    private javax.swing.JLabel selOpenChatL;
+    private javax.swing.JTextField selOpenWaWeb;
+    private javax.swing.JLabel selOpenWaWebL;
+    private javax.swing.JTextField selSndBtn;
+    private javax.swing.JLabel selSndBtnL;
+    private javax.swing.JCheckBox testMode;
     private javax.swing.JPanel toolsPane;
     // End of variables declaration//GEN-END:variables
 }

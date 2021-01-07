@@ -8,8 +8,6 @@ package oa.gnosis.selenium;
 import java.awt.Dimension;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFrame;
 import oa.gnosis.selenium.swing.ToolBoxPanel;
 
@@ -23,7 +21,7 @@ public class Main {
         ToolBoxPanel panel = new ToolBoxPanel();
         JFrame frame = new JFrame();
         frame.add(panel);
-        frame.setPreferredSize(new Dimension(504, 416));
+        frame.setPreferredSize(new Dimension(710, 450));
         frame.setSize(frame.getPreferredSize());
         frame.setResizable(false);
         frame.setVisible(true);

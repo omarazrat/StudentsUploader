@@ -5,26 +5,42 @@
  */
 package oa.gnosis.selenium.actionrunners;
 
-import java.util.List;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Panel;
+import java.awt.Window;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.StringWriter;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.StreamHandler;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import static java.util.stream.Collectors.toList;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.Timer;
 import oa.gnosis.selenium.interfaces.Action;
+import oa.variabilis.web.utils.MessageConsole;
 import oa.variabilis.web.utils.RBHelper;
 import oa.variabilis.web.utils.SysPropertiesHelper;
+import org.apache.commons.io.output.WriterOutputStream;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
  *
@@ -32,71 +48,111 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 public class GroupInviteSender implements Action {
 
+    //Número de veces a buscar antes de considerar que es un error.
+    private static final int REATTEMPT_FIND = 4;
     private RBHelper props = new RBHelper("plugin.GroupInviteSender.");
     private WebDriver driver;
     private final static int DEF_TIMEOUT = 5;
+    private final Logger log = Logger.getLogger(GroupInviteSender.class.getName());
 
     @Override
     public void run(WebDriver driver) {
+        final String CONFIG_OPENCHAT = SysPropertiesHelper.getProp("plugin.GroupInviteSender.selOpenChat");
+        final String CONFIG_SENDBTNCSSSELECTOR = SysPropertiesHelper.getProp("plugin.GroupInviteSender.selBtnSend");
+        final String CONFIG_OPENWHATSAPPWEB = SysPropertiesHelper.getProp("plugin.GroupInviteSender.selOpenWaWeb");
+        final boolean real_exec = !Boolean.valueOf(SysPropertiesHelper.getProp("plugin.testMode"));
+        log.addHandler(new ConsoleHandler());
         this.driver = driver;
         String url = "";
-        final String RET_CARRIAGE=Pattern.quote("\n"),
-                PIPE=Pattern.quote("|");
+        final String RET_CARRIAGE = Pattern.quote("\n"),
+                PIPE = Pattern.quote("|");
         //Pide dirección origen
         do {
             url = JOptionPane.showInputDialog(props.getString("enterUrl"))
                     .replace("/f/i", "/f");
         } while (!valid(url));
+        final String titleProcessingData = props.getString("processingData.title");
+        //Le muestra al usuario la ventana de seguimiento de la construcción de datos
+        Thread t = new Thread(
+                new Runnable() {
+            @Override
+            public void run() {
+                buildLogWnd(titleProcessingData);
+            }
+        }
+        );
+//        Window logFrame = buildLogWnd(titleProcessingData);
+        t.start();
         //Transforma la dir. para bajar todos los telefonos
         String parsedUrl = changeToAllUrl(url);
         driver.get(parsedUrl);
-        String mainTab = driver.getWindowHandle();
-//        driver.switchTo().window(mainTab);
-        //#table > tbody > tr:nth-child(1) > td:nth-child(6) > input[type=text]
-        //Numero, Nombre
         final Map<String, String> contacts = driver.findElements(By.cssSelector(
                 "#table > tbody > tr"))
                 .parallelStream()
-//                .map(i -> {
-//                    System.out.println("recorriendo fila: " + i.getText() + "/");
-//                    return i;
-//                })
+                //                })
                 .collect(Collectors.toMap(row -> {
                     String href = row.findElement(By.cssSelector("td:nth-child(6) > a")).getAttribute("href");
                     final int idx = href.indexOf("=");
                     return href.substring(idx + 1);
-                    },
-                    row -> {
-                        String line = row.getText().split(RET_CARRIAGE)[4];
-                        String []opts= line.split(PIPE);
-                        //Viene vacìo?
-                        return opts.length>0?opts[0]:"";
-                    },
-                    (num1, num2) -> {
-                       System.err.println("Conflicto entre \"" + num1 + "\" y \"" + num2 + "\"");
-                       return num1;
-                }));
+                },
+                        row -> {
+                            String line = row.getText().split(RET_CARRIAGE)[4];
+                            String[] opts = line.split(PIPE);
+                            //Viene vacìo?
+                            return opts.length > 0 ? opts[0] : "";
+                        },
+                        (num1, num2) -> {
+                            log.warning("Conflicto entre \"" + num1 + "\" y \"" + num2 + "\"");
+                            return !num1.isBlank() ? num1 : num2;
+                        }));
+
+        logWnd = false;
         openWhatsAppTab();
-//        driver.switchTo().window(WAtab);
         String message = SysPropertiesHelper.getProp("plugin.GroupInviteSender.message");
         for (String number : contacts.keySet()) {
-            if(number.isBlank()){
+            if (number.isBlank()) {
                 continue;
             }
             String name = contacts.get(number);
             String contactMsg = message.replace("{STUDENT}", name);
-            click("span[data-icon='search']", driver);
-            pause(0.3f);
-            write(number, driver);
-            pause(0.3f);
-            waitNClick("#pane-side > div:nth-child(1) > div > div > div:nth-child(2) > div", driver);
-            //Escribe mensaje
-            //         #main > footer > div._3ee1T._1LkpH.copyable-area > div._3uMse > div > div._3FRCZ.copyable-text.selectable-text
-            waitNWrite("#main > footer > div:nth-child(1) > div:nth-child(2) > div > div:nth-child(2)",
-                     contactMsg, driver);
-            boolean send=false;
-            if(send){
-                waitNClick("#main > footer > div:nth-child(1) > div:nth-child(3) > button", driver);
+            String MS_URL = "https://api.whatsapp.com/send?phone=" + number + "&text=" + StringEscapeUtils.escapeHtml4(contactMsg);
+    
+            boolean _continue = true;
+            while (_continue) {
+                driver.get(MS_URL);
+                final By btnSelector = By.cssSelector(CONFIG_SENDBTNCSSSELECTOR);
+                final By btnGoChat = By.cssSelector(CONFIG_OPENCHAT);
+                final By btnOpenWhatsAppWeb = By.cssSelector(CONFIG_OPENWHATSAPPWEB);
+                try {
+                    waitNClick(btnGoChat, driver);
+                    wait(btnOpenWhatsAppWeb, driver);
+                    if (driver.findElements(btnOpenWhatsAppWeb).isEmpty()) {
+                        //No pasó el botón.
+                        throw new Exception("Button go to WhatsApp had no effect!");
+                    }
+                    click(btnOpenWhatsAppWeb, driver);
+                    wait(btnSelector, driver);
+                    if (real_exec) {
+                        click(btnSelector, driver);
+                    } else {
+                        final String testMsg = props.getString("testMode.message");
+                        if (JOptionPane.showConfirmDialog(null, testMsg, "", JOptionPane.OK_CANCEL_OPTION)
+                                == JOptionPane.CANCEL_OPTION) {
+                            return;
+            
+                        }
+                    }
+                    _continue = false;
+                } catch (/*Timeout*/Exception te) {
+                    te.printStackTrace();
+                    final String WarnAllowWAOpen = props.getString("allowWaAlwaysOpen");
+                    //No aprobó abrir whatsapp URL.
+                    _continue = JOptionPane.showConfirmDialog(null, WarnAllowWAOpen, "", JOptionPane.YES_NO_OPTION)
+                            == JOptionPane.YES_OPTION;
+                    if (!_continue) {
+                        return;
+                    }
+                }
             }
         }
         /**
@@ -177,7 +233,16 @@ public class GroupInviteSender implements Action {
     }
 
     private static void wait(final By elemSelector, WebDriver driver) {
-        wait(DEF_TIMEOUT, elemSelector, driver);
+                    for (int i = 0; i < REATTEMPT_FIND; i++) {
+                        try {
+                            wait(DEF_TIMEOUT, elemSelector, driver);
+                            pause(0.3f);
+                        } catch (Exception e) {;
+                        }
+                        if (!driver.findElements(elemSelector).isEmpty()) {
+                            break;
+                        }
+                    }
     }
 
     private static void wait(final By elemSelector, final ExpectedCondition<WebElement> condition, WebDriver driver) {
@@ -209,15 +274,19 @@ public class GroupInviteSender implements Action {
         final WebElement element = driver.findElement(elemSelector);
         element.sendKeys(text);
     }
+
     /**
-     * Escribe texto en el elemento que esté activo en el navegador, no importa cual sea.
+     * Escribe texto en el elemento que esté activo en el navegador, no importa
+     * cual sea.
+     *
      * @param text
-     * @param driver 
+     * @param driver
      */
-    private static void write(String text,WebDriver driver){
+    private static void write(String text, WebDriver driver) {
         Actions action = new Actions(driver);
         action.sendKeys(text).build().perform();
     }
+
     private static void waitNClick(final String selector, WebDriver driver) {
         final By elemSelector = By.cssSelector(selector);
         waitNClick(elemSelector, driver);
@@ -258,12 +327,64 @@ public class GroupInviteSender implements Action {
         actions.doubleClick(element);
     }
 
-    private void pause(float time) {
+    
+    /**
+     * Pausa la aplicación una cantidad dada de tiempo en segundos.
+     *
+     * @param seconds
+     */
+    private static void pause(float seconds) {
         try {
-            Thread.sleep((long) (time*1000));
+            Thread.sleep((long) (seconds * 1000));
         } catch (InterruptedException ex) {
             Logger.getLogger(GroupInviteSender.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    volatile boolean logWnd;
+
+    /**
+     * Crea una ventana con cierto tìtulo que muestre la salida del log
+     *
+     * @param title
+     * @return
+     */
+    private Window buildLogWnd(String title) {
+        logWnd = true;
+        //componentes
+        JTextArea logTracer = new JTextArea(10, 110);
+        JScrollPane logTracerSP = new JScrollPane(logTracer);
+        final StringWriter stringWriter = new StringWriter();
+        final WriterOutputStream writerOutputStream = new WriterOutputStream(stringWriter);
+        //Seguimiento a swing
+        MessageConsole mc = new MessageConsole(logTracer);
+        mc.redirectOut();
+        mc.setMessageLines(100);
+        //seguimiento a flujo
+        log.addHandler(new StreamHandler(writerOutputStream, new SimpleFormatter()));
+        JPanel panel = new JPanel(new GridBagLayout());
+        logTracer.setEditable(false);
+//        panel.setLayout(new GridBagLayout());
+        final GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(new JLabel(props.getString("processingdata")), gbc);
+    
+        gbc.gridy++;
+        gbc.gridheight = 10;
+        panel.add(logTracerSP, gbc);
+        JFrame frame = new JFrame(title);
+        frame.add(panel);
+        frame.pack();
+        frame.setVisible(true);
+        Timer t = new Timer(100, (e) -> {
+            panel.validate();
+            panel.repaint();
+            if (!logWnd) {
+                frame.setVisible(false);
+            }
+        });
+        t.start();
+        return frame;
     }
 
 }
