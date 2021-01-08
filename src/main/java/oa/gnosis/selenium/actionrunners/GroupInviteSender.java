@@ -5,6 +5,7 @@
  */
 package oa.gnosis.selenium.actionrunners;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Panel;
@@ -115,7 +116,10 @@ public class GroupInviteSender implements Action {
             }
             String name = contacts.get(number);
             String contactMsg = message.replace("{STUDENT}", name);
-            String MS_URL = "https://api.whatsapp.com/send?phone=" + number + "&text=" + StringEscapeUtils.escapeHtml4(contactMsg);
+            String MS_URL = "https://api.whatsapp.com/send?phone=" + number + "&text=" 
+                    + StringEscapeUtils.escapeHtml4(contactMsg
+                            .replace(System.getProperty("line.separator"), "%0a")
+                            .replace("\n","%0a"));
     
             boolean _continue = true;
             while (_continue) {
@@ -354,6 +358,8 @@ public class GroupInviteSender implements Action {
         //componentes
         JTextArea logTracer = new JTextArea(10, 110);
         JScrollPane logTracerSP = new JScrollPane(logTracer);
+        logTracer.setMinimumSize(new Dimension(200, 50));
+        logTracer.setPreferredSize(logTracer.getMinimumSize());
         final StringWriter stringWriter = new StringWriter();
         final WriterOutputStream writerOutputStream = new WriterOutputStream(stringWriter);
         //Seguimiento a swing
@@ -366,8 +372,12 @@ public class GroupInviteSender implements Action {
         logTracer.setEditable(false);
 //        panel.setLayout(new GridBagLayout());
         final GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridy=gbc.gridx=0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(props.getString("processingdata")), gbc);
+        final JLabel label = new JLabel(props.getString("processingdata"));
+        label.setMinimumSize(new Dimension(200,20));
+        label.setPreferredSize(label.getMinimumSize());
+        panel.add(label, gbc);
     
         gbc.gridy++;
         gbc.gridheight = 10;

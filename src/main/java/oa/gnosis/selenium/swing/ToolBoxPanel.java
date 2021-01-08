@@ -323,6 +323,13 @@ public class ToolBoxPanel extends javax.swing.JPanel {
             e.printStackTrace();
         }
     }
+    public void closeDriver() {
+        try{
+            driver.quit();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
     public void dispose() {
         driver.quit();

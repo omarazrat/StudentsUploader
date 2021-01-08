@@ -12,10 +12,14 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import static java.util.stream.Collectors.toList;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import oa.gnosis.selenium.RowConsumer;
 import oa.gnosis.selenium.interfaces.Action;
+import oa.variabilis.web.utils.RBHelper;
+import oa.variabilis.web.utils.SysPropertiesHelper;
 import oa.variabilis.web.utils.poi.RowStream;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.Row;
@@ -26,7 +30,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -39,6 +42,7 @@ public class Uploader implements Action {
 
     private static Logger log;
     private static WebDriver driver;
+    private static boolean real_exec;
 
     /**
      * Procesador de filas de hoja de cálculo Por cada fila toma los datos de
@@ -76,7 +80,9 @@ public class Uploader implements Action {
                 emailF.sendKeys(consumer.getEmail());
             }
             final WebElement registerBtn = driver.findElement(By.cssSelector("form button"));
-            registerBtn.click();
+            if (real_exec) {
+                registerBtn.click();
+            }
             log.info(consumer.getUserLogName() + " OK");
         } catch (Exception nse) {
             log.severe(consumer.getUserLogName() + " ERROR");
@@ -85,6 +91,7 @@ public class Uploader implements Action {
 
     @Override
     public void run(WebDriver driver) {
+        real_exec = !Boolean.valueOf(SysPropertiesHelper.getProp("plugin.testMode"));
         Uploader.driver = driver;
         log = Logger.getLogger(Uploader.class.getName());
         FileHandler fh = null;
@@ -117,7 +124,14 @@ public class Uploader implements Action {
         final Sheet sheet = wb.getSheetAt(0);
         RowStream rowst = new RowStream(sheet);
 //        rowst.parallel().forEach(CURLProcessor);
-        rowst.forEach(SeleniumProcessor);
+        for (Row row : rowst.collect(toList())) {
+            SeleniumProcessor.accept(row);
+            if (!real_exec && JOptionPane.showConfirmDialog(null, RBHelper.sgetString("plugin.Uploader.message"), "", JOptionPane.OK_CANCEL_OPTION)
+                    == JOptionPane.CANCEL_OPTION) {
+                return;
+            }
+
+        }
     }
 
 }

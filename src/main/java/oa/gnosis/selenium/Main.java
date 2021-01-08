@@ -34,6 +34,7 @@ public class Main {
             @Override
             public void windowClosing(WindowEvent e) {
                 //panel.dispose();
+                panel.closeDriver();
                 System.exit(0);
             }
 
